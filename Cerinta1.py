@@ -1,3 +1,5 @@
+from collections import deque
+
 f = open("Cerinta1.in")
 w = open("Cerinta1.out", "w")
 
@@ -35,27 +37,27 @@ def lambda_inchidere(stari_initiale, delta):
                 stiva.append(stare_urmatoare)
     return inchidere
 
-#multime = lambda_inchidere(stari_initiale, delta)
+def subset_construction(stare_initiala, alfabet, delta):
+    start = frozenset(lambda_inchidere([stare_initiala], delta))
+    queue = deque([start])
+    vizitate = {start}
+    dfa = {}
+    while queue:
+        stare_curenta = queue.popleft()
+        dfa[stare_curenta] = {}
+        for simbol in alfabet:
+            urmatoare = set()
+            for stare in stare_curenta:
+                for vecin in delta.get(stare, {}).get(simbol, []):
+                    urmatoare.update(
+                        lambda_inchidere([vecin], delta)
+                    )
+            urmatoare = frozenset(urmatoare)
+            dfa[stare_curenta][simbol] = urmatoare
+            w.write(f"Din {stare_curenta} mergem cu {simbol} in {urmatoare}\n")
+            if urmatoare not in vizitate:
+                vizitate.add(urmatoare)
+                queue.append(urmatoare)
+    return dfa
 
-#print(multime)
-
-#print(stari)
-
-#print(stari_initiale)
-
-for stare in stari:
-    #print(stare)
-    primul_lambda = lambda_inchidere([stare], delta)
-    #print(primul_lambda)
-    for a in alfabet:
-        prima_litera = set()
-        for s in primul_lambda:
-            for j in delta.get(s, {}).get(a, []):
-                prima_litera.add(j)
-
-        if prima_litera:
-            al_doilea_lambda = lambda_inchidere(prima_litera, delta)
-            print(f"Din --{stare}-- mergem cu lambda in {primul_lambda}, apoi cu --{a}-- in {prima_litera}, iar apoi cu lambda in --{al_doilea_lambda}--")
-
-        else:
-            print(f"Din --{stare}-- mergem cu lambda in {primul_lambda}, apoi MULTIMEA VIDA")
+subset_construction(stare_initiala, alfabet, delta)
